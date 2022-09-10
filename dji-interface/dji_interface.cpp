@@ -22,9 +22,10 @@ vector<string> split(const string &s, char delim) {
 void sendInterfaceStatus(zmq::socket_t& zmq_socket, string state, string fail_state, string fail_out, bool active_mode)
 {
 	json interface_status;
-	interface_status["interface_state"] = state;
-	interface_status["failure_type"] = fail_state;
-	interface_status["failure_output"] = fail_out;
+	interface_status["topic"] = "InterfaceStatus";
+	interface_status["state"] = state;
+	interface_status["fail_state"] = fail_state;
+	interface_status["fail_output"] = fail_out;
 	interface_status["active_mode"] = active_mode;
 
 	string json_string = interface_status.dump();
@@ -33,7 +34,6 @@ void sendInterfaceStatus(zmq::socket_t& zmq_socket, string state, string fail_st
 	zmq::message_t zmq_msg(json_length);
 	memcpy(zmq_msg.data(), json_string.c_str(), json_length);
 
-	zmq_socket.send(zmq::message_t("1", 1), zmq::send_flags::sndmore);
 	zmq_socket.send(zmq_msg, zmq::send_flags::none);
 }
 
