@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	while (true) 
 	{
 		zmq::message_t req_message;
-		zmq_socket.recv (&req_message);
+		zmq_socket.recv (req_message);
 		vector<string> req_vec = split(string(static_cast<char*>(req_message.data()), req_message.size()), *const_cast<char*>(" "));
 		string rep_string = "";
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(dji-interface)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -g -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -g -O0 -Wno-psabi")
 set(ONBOARDSDK_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../osdk-core")
 set(MODULES_HEADER_DIR "${ONBOARDSDK_SOURCE}/modules/inc/payload")
 set(FLIGHT_MODULES_HEADER_DIR "${ONBOARDSDK_SOURCE}/modules/inc/flight")
