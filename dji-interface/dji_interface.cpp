@@ -19,7 +19,7 @@ vector<string> split(const string &s, char delim) {
     return elems;
 }
 
-void sendInterfaceStatus(zmq::socket_t& zmq_socket, int state, int fail_state, string fail_out, bool active_mode)
+void sendInterfaceStatus(zmq::socket_t& zmq_socket, string state, string fail_state, string fail_out, bool active_mode)
 {
 	json interface_status;
 	interface_status["interface_state"] = state;
@@ -59,9 +59,9 @@ Vehicle* startVehicleInterface(zmq::socket_t& zmq_socket, LinuxSetup *linuxEnvir
 	if (vehicle == NULL)
 	{
 		if (rt_errors.length() == 0) {
-			sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::OFFLINE, pbdrone::InterfaceStatus::ATTEMPT_FAILURE, init_errors, false);
+			sendInterfaceStatus(zmq_socket, "OFFLINE", "ATTEMPT_FAILURE", init_errors, false);
 		} else {
-			sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::OFFLINE, pbdrone::InterfaceStatus::ATTEMPT_FAILURE, rt_errors, false);
+			sendInterfaceStatus(zmq_socket, "OFFLINE", "ATTEMPT_FAILURE", rt_errors, false);
 		}
 		cout << "Could not connect.\n";
 		
@@ -69,7 +69,7 @@ Vehicle* startVehicleInterface(zmq::socket_t& zmq_socket, LinuxSetup *linuxEnvir
 	else
 	{
 		cout << "Connected.\n";
-		sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::ONLINE, pbdrone::InterfaceStatus::NO_FAILURE, "", false);
+		sendInterfaceStatus(zmq_socket, "ONLINE", "NO_FAILURE", "", false);
 	}
 
 	cout << "Sending interface status.\n";
@@ -104,13 +104,9 @@ int main(int argc, char *argv[])
 		if (req_vec[0] == "check_interface")
 		{
 			if (vehicle == NULL) {
-				sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::OFFLINE, 
-					pbdrone::InterfaceStatus::NO_FAILURE, 
-					"", false);
+				sendInterfaceStatus(zmq_socket, "OFFLINE", "NO_FAILURE", "", false);
 			} else {
-				sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::ONLINE, 
-					pbdrone::InterfaceStatus::NO_FAILURE, 
-					"", false);
+				sendInterfaceStatus(zmq_socket, "ONLINE", "NO_FAILURE", "", false);
 			}
 		}
 		else 
@@ -229,8 +225,8 @@ int main(int argc, char *argv[])
 	// 	} 
 	// }
 
-	if (tele_control != NULL) {
-		delete tele_control;
-	}
+	// if (tele_control != NULL) {
+	// 	delete tele_control;
+	// }
 	return 0;
 }

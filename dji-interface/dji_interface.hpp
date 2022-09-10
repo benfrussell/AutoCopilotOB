@@ -9,7 +9,7 @@
 #include <iterator>
 
 #include <zmq_addon.hpp>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 
 // DJI OSDK includes
 #include <dji_vehicle.hpp>

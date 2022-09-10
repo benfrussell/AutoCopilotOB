@@ -52,7 +52,7 @@ set_target_properties(djiosdk-core PROPERTIES
 set_property(TARGET djiosdk-core APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(djiosdk-core PROPERTIES
   IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "CXX"
-  IMPORTED_LOCATION_DEBUG "/home/pi/ACE-Onboard-Computer/libs/libdjiosdk-core.a"
+  IMPORTED_LOCATION_DEBUG "/home/pi/AutoCopilotOB/libs/libdjiosdk-core.a"
   )
 
 # This file does not depend on other imported targets which have

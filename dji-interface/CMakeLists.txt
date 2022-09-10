@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
-project(AutoCopilotOB)
+project(dji-interface)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -g -O0")
 set(ONBOARDSDK_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../osdk-core")
 set(MODULES_HEADER_DIR "${ONBOARDSDK_SOURCE}/modules/inc/payload")
 set(FLIGHT_MODULES_HEADER_DIR "${ONBOARDSDK_SOURCE}/modules/inc/flight")
-set(JSON_BuildTests OFF CACHE INTERNAL "")
 
 include_directories(${ONBOARDSDK_SOURCE}/api/inc)
 include_directories(${ONBOARDSDK_SOURCE}/utility/inc)
@@ -15,6 +14,7 @@ include_directories(${ONBOARDSDK_SOURCE}/platform/linux/inc)
 include_directories(${MODULES_HEADER_DIR})
 include_directories(${FLIGHT_MODULES_HEADER_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/nlohmann)
 include_directories(${PROJECT_BINARY_DIR})
 
 find_package(cppzmq)
