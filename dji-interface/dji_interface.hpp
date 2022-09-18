@@ -17,6 +17,6 @@
 // Helpers
 #include <dji_linux_helpers.hpp>
 
-//#include "telemetry.hpp"
+#include "telemetry.hpp"
 
 #endif

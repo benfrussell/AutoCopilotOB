@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 
 	LinuxSetup linuxEnvironment(argc, argv);
 	Vehicle* vehicle;
-	//TelemetryController* tele_control;
+	TelemetryController* tele_control;
 
 	while (true) 
 	{
@@ -109,6 +109,32 @@ int main(int argc, char *argv[])
 				sendInterfaceStatus(zmq_socket, "ONLINE", "NO_FAILURE", "", false);
 			}
 		}
+		else if (req_vec[0] == "retrieve_data") 
+		{
+			tele_control->retrieveData();
+		} 
+		else if (req_vec[0] == "start_interface")
+		{
+			vehicle = startVehicleInterface(zmq_socket, &linuxEnvironment);
+			if (vehicle != NULL)
+			{
+				tele_control = new TelemetryController(vehicle, &zmq_socket, 8);
+			}
+		}
+		else if (req_vec[0] == "return_home")
+		{
+			if (vehicle != NULL) {
+				ErrorCode::ErrorCodeType goHomeAck = vehicle->flightController->startGoHomeSync(3);
+				if (goHomeAck != ErrorCode::SysCommonErr::Success) {
+					DERROR("Fail to execute go home action!  Error code: %llx\n",goHomeAck);
+					rep_string = "Fail to execute go home action!";
+				} else {
+					rep_string = "Going home!";
+				}
+			} else {
+				rep_string = "Vehicle is not connected.";
+			}
+		}
 		else 
 		{
 			rep_string = "Unknown command.";
@@ -120,113 +146,8 @@ int main(int argc, char *argv[])
 		} 
 	}
 
-	// while (true) 
-	// {
-	// 	zmq::message_t req_message;
-	// 	zmq_socket.recv (&req_message);
-	// 	vector<string> req_vec = split(string(static_cast<char*>(req_message.data()), req_message.size()), *const_cast<char*>(" "));
-	// 	string rep_string = "";
-
-	// 	cout << "REQUEST: " << req_vec[0] << "\n";
-
-	// 	if (req_vec[0] == "switch_idle") 
-	// 	{
-	// 		if (vehicle == NULL || tele_control == NULL) {
-	// 			sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::OFFLINE, 
-	// 				pbdrone::InterfaceStatus::NO_FAILURE, 
-	// 				"", false);
-	// 		} else {
-	// 			tele_control->switchToIdle();
-	// 			sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::ONLINE, 
-	// 				pbdrone::InterfaceStatus::NO_FAILURE, 
-	// 				"", tele_control->active_mode);
-	// 		}
-	// 	} 
-	// 	else if (req_vec[0] == "switch_active") 
-	// 	{
-			
-	// 		if (vehicle == NULL || tele_control == NULL) {
-	// 			sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::OFFLINE, 
-	// 				pbdrone::InterfaceStatus::NO_FAILURE, 
-	// 				"", false);
-	// 		} else {
-	// 			if (req_vec.size() == 1) 
-	// 			{
-	// 				sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::ONLINE, 
-	// 					pbdrone::InterfaceStatus::NO_FAILURE, 
-	// 					"Must provide an update rate for active mode (Hz).", tele_control->active_mode);
-	// 			} 
-	// 			else 
-	// 			{
-	// 				try 
-	// 				{
-	// 					int hz = std::stoi(req_vec[1]);
-	// 					tele_control->switchToActive(hz);
-	// 					sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::ONLINE, 
-	// 						pbdrone::InterfaceStatus::NO_FAILURE, 
-	// 						"", tele_control->active_mode);
-	// 				}
-	// 				catch (std::invalid_argument& e)
-	// 				{
-	// 					sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::ONLINE, 
-	// 						pbdrone::InterfaceStatus::NO_FAILURE, 
-	// 						"Could not parse the update rate argument into an integer.", tele_control->active_mode);
-	// 				}				
-	// 			}
-	// 		}
-	// 	} 
-	// 	else if (req_vec[0] == "retrieve_data") 
-	// 	{
-	// 		tele_control->retrieveData();
-	// 	} 
-	// 	else if (req_vec[0] == "start_interface")
-	// 	{
-	// 		vehicle = startVehicleInterface(zmq_socket, &linuxEnvironment);
-	// 		if (vehicle != NULL)
-	// 		{
-	// 			tele_control = new TelemetryController(vehicle, &zmq_socket);
-	// 		}
-	// 	}
-	// 	else if (req_vec[0] == "check_interface")
-	// 	{
-	// 		if (vehicle == NULL || tele_control == NULL) {
-	// 			sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::OFFLINE, 
-	// 				pbdrone::InterfaceStatus::NO_FAILURE, 
-	// 				"", false);
-	// 		} else {
-	// 			sendInterfaceStatus(zmq_socket, pbdrone::InterfaceStatus::ONLINE, 
-	// 				pbdrone::InterfaceStatus::NO_FAILURE, 
-	// 				"", tele_control->active_mode);
-	// 		}
-	// 	}
-	// 	else if (req_vec[0] == "return_home")
-	// 	{
-	// 		if (vehicle != NULL) {
-	// 			ErrorCode::ErrorCodeType goHomeAck = vehicle->flightController->startGoHomeSync(3);
-	// 			if (goHomeAck != ErrorCode::SysCommonErr::Success) {
-	// 				DERROR("Fail to execute go home action!  Error code: %llx\n",goHomeAck);
-	// 				rep_string = "Fail to execute go home action!";
-	// 			} else {
-	// 				rep_string = "Going home!";
-	// 			}
-	// 		} else {
-	// 			rep_string = "Vehicle is not connected.";
-	// 		}
-			
-	// 	}
-	// 	else 
-	// 	{
-	// 		rep_string = "Unknown command.";
-	// 	}
-
-	// 	if (rep_string.size() > 0) {
-	// 		zmq_socket.send(zmq::message_t(&rep_string, (int)rep_string.size()), zmq::send_flags::none);
-	// 		cout << "REPLY: " << rep_string << "\n";
-	// 	} 
-	// }
-
-	// if (tele_control != NULL) {
-	// 	delete tele_control;
-	// }
+	if (tele_control != NULL) {
+		delete tele_control;
+	}
 	return 0;
 }
