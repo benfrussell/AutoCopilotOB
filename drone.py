@@ -20,7 +20,6 @@ class InterfaceState(str, Enum):
 class InterfaceFailState(str, Enum):
 	NO_FAILURE = "NO_FAILURE"
 	ATTEMPT_FAILURE = "ATTEMPT_FAILURE"
-	THREAD_FAILURE = "THREAD_FAILURE"
 	THREAD_TIMEOUT = "THREAD_TIMEOUT"
 
 
@@ -105,11 +104,7 @@ class DJIInterfaceThread(IPCRequestThread):
 		if not self.initialized:
 			return
 
-		if not self._halt_event.set() and not self.is_alive():
-			with self._status_lock:
-				self._fail_state = InterfaceFailState.THREAD_FAILURE
-				self._fail_output = "Drone interface thread died unexpectedly."
-		elif self.waiting_on_reply and self.current_request == "retrieve_data":
+		if self.waiting_on_reply and self.current_request == "retrieve_data":
 			if self.get_reply_time() > config.INTERFACE_TIMEOUT:
 				with self._status_lock:
 					self._fail_state = InterfaceFailState.THREAD_TIMEOUT
@@ -236,8 +231,8 @@ class DJIDrone(Drone):
 		return self._interface.status
 
 	def update(self):
-		if self._interface.fail_state is InterfaceFailState.THREAD_FAILURE or \
-			self._interface.fail_state is InterfaceFailState.THREAD_TIMEOUT:
+		if self._interface.fail_state is InterfaceFailState.THREAD_TIMEOUT:
+			Log.add(self._interface.fail_output)
 			self._reinitialize_interface()
 		else:
 			if self._interface.status == InterfaceState.ATTEMPTING:

@@ -40,7 +40,7 @@ class IPCThread(threading.Thread):
 	def start(self):
 		if self.is_alive():
 			raise UnexpectedStateError("Tried to start an IPC thread that is already running.")
-		elif self._halt_event.set():
+		elif self._halt_event.is_set():
 			raise UnexpectedStateError("Tried to start an IPC thread that was stopped. It must be reinitialized.")
 		super().start()
 
@@ -50,7 +50,6 @@ class IPCThread(threading.Thread):
 		while not self._halt_event.is_set():
 			self._thread_action()
 			self._halt_event.wait(self.rate)
-
 		self._thread_complete()
 
 	def stop(self):
