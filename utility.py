@@ -33,7 +33,7 @@ def activate_feed(feed_name, bound_process_name=None):
 
 	# If we made it this far then we're in an unexpected state
 	feed_exists_str = "DOES" if feed_exists else "DOES NOT"
-	raise UnexpectedACEStateError("""
+	raise UnexpectedStateError("""
 		Unexpected state when verifying ipc feed {0} with owner {1}. 
 		Feed {2} exist but the owner count is {3}.""".format(feed_name, bound_process_name, feed_exists_str, owner_count))
 

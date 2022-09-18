@@ -1,11 +1,7 @@
 import zmq
 import threading
-import os.path
 import time
-from traceback import format_exception
 from queue import Queue
-from datetime import datetime
-from logger import Log
 
 from utility import activate_feed, UnexpectedStateError
 
@@ -14,15 +10,11 @@ class IPCThread(threading.Thread):
 	def __init__(self, zmq_context, zmq_type, feed_name, auto_feed_activation=False, rate=10/1000):
 		super().__init__()
 		self.rate = rate
-		self.exception = None
-		self.exception_raised = False
-		# Tracks whether the thread was ever started, as opposed to is_alive which only tracks if it's currently running
-		self.started = False
 		self.initialized = False
 
 		self._zmq_context = zmq_context
 		self._zmq_type = zmq_type
-		self._event = threading.Event()
+		self._halt_event = threading.Event()
 		self._feed_name = feed_name
 		self._auto_feed_activation = auto_feed_activation
 		self._socket = None
@@ -46,28 +38,23 @@ class IPCThread(threading.Thread):
 		pass
 
 	def start(self):
-		if self.started is True:
-			raise UnexpectedStateError("Tried to start a thread that had already been started before.")
-		else:
-			self.started = True
+		if self.is_alive():
+			raise UnexpectedStateError("Tried to start an IPC thread that is already running.")
+		elif self._halt_event.set():
+			raise UnexpectedStateError("Tried to start an IPC thread that was stopped. It must be reinitialized.")
 		super().start()
 
 	def run(self):
 		self._thread_init()
 		self.initialized = True
-		while not self._event.is_set():
+		while not self._halt_event.is_set():
 			self._thread_action()
-			self._event.wait(self.rate)
+			self._halt_event.wait(self.rate)
 
 		self._thread_complete()
 
 	def stop(self):
-		self._event.set()
-
-	def update(self):
-		while not self._subscriber_queue.empty():
-			msg = self._subscriber_queue.get()
-			self._message_callback(str(msg[0], "utf-8"), msg[1])
+		self._halt_event.set()
 
 
 class IPCRequestThread(IPCThread):

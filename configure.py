@@ -77,6 +77,7 @@ class ConfigManager:
 		self.entries = dict()
 
 		self.add_entry("Main", "UPDATE_HZ", "int")
+		self.add_entry("Drone", "INTERFACE_TIMEOUT", "int")
 
 	def add_entry(self, section, option, type):
 		self._validate_and_restore_section(section)
