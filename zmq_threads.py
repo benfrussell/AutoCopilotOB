@@ -123,3 +123,53 @@ class IPCRequestThread(IPCThread):
 			if self._request_in_progress:
 				return time.time() - self._request_time
 			return 0
+
+
+class TCPThread(threading.Thread):
+	def __init__(self, zmq_context, zmq_type, address, port, rate=10/1000):
+		super().__init__()
+		self.rate = rate
+		# Tracks whether the thread was ever started, as opposed to is_alive which only tracks if it's currently running
+		self.started = False
+
+		self._zmq_context = zmq_context
+		self._zmq_type = zmq_type
+		self._event = threading.Event()
+		self._address = address
+		self._port = str(port)
+		self._socket = None
+
+		self.setDaemon(True)
+
+	def _thread_init(self):
+		self._socket = self._zmq_context.socket(self._zmq_type)
+		try:
+			self._socket.bind("tcp://*:{}".format(self._port))
+		except zmq.error.ZMQError as e:
+			if "Address already in use" in e.strerror:
+				self._socket.connect("tcp://{}:{}".format(self._address, self._port))
+			else:
+				raise e
+
+	def _thread_action(self):
+		pass
+
+	def _thread_complete(self):
+		pass
+
+	def start(self):
+		super().start()
+		self.started = True
+
+	def run(self):
+		self._thread_init()
+
+		while not self._event.is_set():
+			self._thread_action()
+			self._event.wait(self.rate)
+
+		self._thread_complete()
+
+	def stop(self):
+		self._event.set()
+
